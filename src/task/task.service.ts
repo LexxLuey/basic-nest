@@ -1,10 +1,14 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskDto, EditTaskDto } from './dto';
+import { TaskGateway } from './task.gateway';
 
 @Injectable()
 export class TaskService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private taskGateway: TaskGateway,
+  ) {}
 
   getTasks(ownerId: number) {
     return this.prisma.task.findMany({
@@ -33,6 +37,9 @@ export class TaskService {
           isDone: dto.isDone,
         },
       });
+      // Emit event after task creation
+      this.taskGateway.handleTaskCreated(dto);
+
       return task;
     } catch (error) {
       if (error) {
@@ -64,7 +71,7 @@ export class TaskService {
     if (!task || task.ownerId !== ownerId)
       throw new ForbiddenException('Access to resources denied');
 
-    return this.prisma.task.update({
+    const editedTask = this.prisma.task.update({
       where: {
         id: taskId,
       },
@@ -72,6 +79,8 @@ export class TaskService {
         ...dto,
       },
     });
+    this.taskGateway.handleTaskCreated(task);
+    return editedTask;
   }
 
   async deleteTaskById(ownerId: number, taskId: number) {
