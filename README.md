@@ -16,8 +16,8 @@ SIMPLE NEST.JS TASK API WITH SWAGGER AND JWT AUTH.
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
-cd <repository-folder>
+git clone https://github.com/LexxLuey/basic-nest
+cd basic-nest
 ```
 
 ### 2. Start PostgreSQL Container
